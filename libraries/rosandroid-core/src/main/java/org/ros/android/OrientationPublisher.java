@@ -20,12 +20,16 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import geometry_msgs.PoseStamped;
+import geometry_msgs.Twist;
+import geometry_msgs.TwistStamped;
+
 import org.ros.message.Time;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.topic.Publisher;
+
+
 
 /**
  * @author damonkohler@google.com (Damon Kohler)
@@ -38,9 +42,9 @@ public class OrientationPublisher extends AbstractNodeMain {
 
   private final class OrientationListener implements SensorEventListener {
 
-    private final Publisher<geometry_msgs.PoseStamped> publisher;
+    private final Publisher<geometry_msgs.TwistStamped> publisher;
 
-    private OrientationListener(Publisher<geometry_msgs.PoseStamped> publisher) {
+    private OrientationListener(Publisher<geometry_msgs.TwistStamped> publisher) {
       this.publisher = publisher;
     }
 
@@ -53,15 +57,17 @@ public class OrientationPublisher extends AbstractNodeMain {
       if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
         float[] quaternion = new float[4];
         SensorManager.getQuaternionFromVector(quaternion, event.values);
-        PoseStamped pose = publisher.newMessage();
-        pose.getHeader().setFrameId("/map");
+        TwistStamped twist = publisher.newMessage();
+        //twist.get.setFrameId("/map");
         // TODO(damonkohler): Should get time from the Node.
-        pose.getHeader().setStamp(Time.fromMillis(System.currentTimeMillis()));
-        pose.getPose().getOrientation().setW(quaternion[0]);
-        pose.getPose().getOrientation().setX(quaternion[1]);
-        pose.getPose().getOrientation().setY(quaternion[2]);
-        pose.getPose().getOrientation().setZ(quaternion[3]);
-        publisher.publish(pose);
+          twist.getHeader().setStamp(Time.fromMillis(System.currentTimeMillis()));
+          twist.getTwist().getLinear().setX(0.0);
+          twist.getTwist().getLinear().setY(0.0);
+          twist.getTwist().getLinear().setZ(0.0);
+          twist.getTwist().getAngular().setX(quaternion[1]);
+          twist.getTwist().getAngular().setY(quaternion[2]);
+          twist.getTwist().getAngular().setZ(quaternion[3]);
+        publisher.publish(twist);
       }
     }
   }
@@ -78,7 +84,7 @@ public class OrientationPublisher extends AbstractNodeMain {
   @Override
   public void onStart(ConnectedNode connectedNode) {
     try {
-      Publisher<geometry_msgs.PoseStamped> publisher =
+      Publisher<geometry_msgs.TwistStamped> publisher =
               connectedNode.newPublisher("android/orientation", "geometry_msgs/PoseStamped");
       orientationListener = new OrientationListener(publisher);
       Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);

@@ -36,7 +36,7 @@ public class ImuPublisherNode extends AbstractNodeMain {
     private OnFrameIdChangeListener imuFrameIdChangeListener;
 
     public ImuPublisherNode() {
-        this.topic_name = "imu_data";
+        this.topic_name = "cmd_vel";
         isAccelerometerMessagePending = false;
         isGyroscopeMessagePending = false;
         isOrientationMessagePending = false;
@@ -148,18 +148,18 @@ public class ImuPublisherNode extends AbstractNodeMain {
                     if (dYaw > 180)
                         dYaw = 360 - dYaw;
 
-                    imuMessage.getAngularVelocity().setX(dRoll / dt);
-                    imuMessage.getAngularVelocity().setY(dPitch / dt);
-                    imuMessage.getAngularVelocity().setZ(dYaw / dt);
+                    imuMessage.getAngularVelocity().setX(3.14 * dRoll / 180); // zayaha brdo
+                    imuMessage.getAngularVelocity().setY(3.14 * dPitch / 180); // zayaha
+                    imuMessage.getAngularVelocity().setZ(3.14 * dYaw / 180); // instead of (dYaw / dt)
 
                     prevRoll = roll;
                     prevPitch = pitch;
                     prevYaw = yaw;
 
-                    imuMessage.getOrientation().setW(roll);
-                    imuMessage.getOrientation().setX(roll);
-                    imuMessage.getOrientation().setY(pitch);
-                    imuMessage.getOrientation().setZ(yaw);
+                    imuMessage.getOrientation().setW(20 * dRoll);
+                    imuMessage.getOrientation().setX(20 * dRoll);
+                    imuMessage.getOrientation().setY(20 * dPitch);
+                    imuMessage.getOrientation().setZ(20 * dYaw);
 
                     imuPublisher.publish(imuMessage);
 
